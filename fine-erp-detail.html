@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fine ERP Jewellers – Full Product Showcase</title>
+    <meta name="description" content="Fine ERP Jewellers – A complete ERP solution for jewellery businesses. Available on PC and Android mobile.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #f5c842;
+            --gold2: #e8a020;
+            --amber: #ffb347;
+            --cyan: #00f5ff;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --green: #10b981;
+            --bg: #030712;
+            --bg2: #0a0f1e;
+            --bg3: #0d1117;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --gold-border: rgba(245,200,66,0.25);
+            --text: #e2e8f0;
+            --muted: #64748b;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+            min-height: 100vh;
+        }
+
+        /* Custom Cursor */
+        #cursor-dot { position: fixed; top:0; left:0; width:8px; height:8px; background:var(--gold); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.1s; }
+        #cursor-ring { position:fixed; top:0; left:0; width:36px; height:36px; border:2px solid rgba(245,200,66,0.5); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:all 0.12s ease-out; }
+        #cursor-ring.hovering { width:60px; height:60px; background:rgba(245,200,66,0.08); border-color:var(--gold); }
+
+        /* Canvas */
+        #bg-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+
+        /* Noise */
+        body::before { content:''; position:fixed; inset:0; z-index:1; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"); opacity:0.4; }
+
+        /* NAV */
+        nav { position:fixed; top:0; left:0; width:100%; z-index:100; padding:0 5%; background:rgba(3,7,18,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--gold-border); }
+        .nav-inner { display:flex; align-items:center; justify-content:space-between; height:68px; }
+        .nav-back { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--muted); font-size:0.9rem; font-weight:600; transition:all 0.3s; }
+        .nav-back:hover { color:var(--gold); }
+        .nav-back i { font-size:1rem; }
+        .nav-logo { display:flex; align-items:center; gap:12px; }
+        .nav-logo img { height:36px; object-fit:contain; }
+        .nav-logo-text { font-size:1rem; font-weight:700; color:white; }
+        .nav-logo-text span { color:var(--gold); }
+
+        /* WRAPPER */
+        .wrapper { position:relative; z-index:2; padding-top:68px; }
+
+        /* HERO SECTION */
+        .hero-section {
+            min-height: 92vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 5%;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg-glow {
+            position: absolute;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(245,200,66,0.08) 0%, transparent 65%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .hero-content { text-align:center; max-width:820px; position:relative; z-index:2; }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:6px 20px; border-radius:100px;
+            border:1px solid var(--gold-border);
+            background:rgba(245,200,66,0.06);
+            font-size:0.78rem; color:var(--gold); margin-bottom:1.5rem;
+            font-family:'JetBrains Mono',monospace; letter-spacing:0.1em;
+            animation: fadeDown 0.6s ease both;
+        }
+        .hero-badge .dot { width:7px; height:7px; background:var(--gold); border-radius:50%; animation:pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.5);} }
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-20px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+
+        .hero-logo-wrap {
+            display:flex; justify-content:center; margin-bottom:2rem;
+            animation: fadeUp 0.7s 0.1s ease both;
+        }
+        .hero-logo-wrap img {
+            height: 90px;
+            filter: drop-shadow(0 0 30px rgba(245,200,66,0.4));
+            transition: filter 0.3s;
+        }
+        .hero-logo-wrap img:hover { filter: drop-shadow(0 0 50px rgba(245,200,66,0.7)); }
+
+        .hero-title {
+            font-size: clamp(2.4rem,6vw,4.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            margin-bottom: 1rem;
+            animation: fadeUp 0.7s 0.2s ease both;
+        }
+        .gold-text {
+            background: linear-gradient(135deg, var(--gold), var(--amber), var(--gold2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.1rem; color:var(--muted); line-height:1.8; margin-bottom:2.5rem;
+            max-width:640px; margin-left:auto; margin-right:auto;
+            animation: fadeUp 0.7s 0.3s ease both;
+        }
+
+        /* FEATURE PILLS */
+        .feature-pills {
+            display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+            margin-bottom:3rem;
+            animation: fadeUp 0.7s 0.4s ease both;
+        }
+        .fpill {
+            display:flex; align-items:center; gap:6px;
+            padding:7px 16px; border-radius:100px;
+            border:1px solid var(--gold-border);
+            background:rgba(245,200,66,0.05);
+            font-size:0.8rem; color:var(--gold); font-weight:600;
+        }
+        .fpill i { font-size:0.75rem; }
+
+        /* VERSION CHOOSER */
+        .version-chooser {
+            display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;
+            max-width:700px; margin:0 auto;
+            animation: fadeUp 0.7s 0.5s ease both;
+        }
+        .version-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            cursor: none;
+            transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .version-card::before {
+            content:''; position:absolute; inset:0; border-radius:24px;
+            background: linear-gradient(135deg, rgba(245,200,66,0.1), transparent);
+            opacity:0; transition:opacity 0.4s;
+        }
+        .version-card:hover { border-color:var(--gold); transform:translateY(-10px); box-shadow:0 25px 80px rgba(245,200,66,0.2); }
+        .version-card:hover::before { opacity:1; }
+        .vc-icon {
+            width:72px; height:72px; border-radius:20px;
+            background: linear-gradient(135deg, rgba(245,200,66,0.15), rgba(232,160,32,0.1));
+            border: 1px solid var(--gold-border);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.8rem; color:var(--gold); margin:0 auto 1.2rem;
+            transition: all 0.3s;
+        }
+        .version-card:hover .vc-icon { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; box-shadow:0 0 30px rgba(245,200,66,0.5); }
+        .vc-title { font-size:1.2rem; font-weight:800; margin-bottom:0.5rem; color:white; }
+        .vc-desc { font-size:0.82rem; color:var(--muted); line-height:1.6; margin-bottom:1.2rem; }
+        .vc-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:10px 22px; border-radius:12px;
+            background:linear-gradient(135deg,rgba(245,200,66,0.15),rgba(232,160,32,0.1));
+            border:1px solid var(--gold-border);
+            color:var(--gold); font-size:0.85rem; font-weight:700;
+            transition:all 0.3s;
+        }
+        .version-card:hover .vc-btn { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#000; border-color:transparent; }
+        .vc-badge {
+            position:absolute; top:14px; right:14px;
+            padding:4px 10px; border-radius:100px;
+            font-size:0.65rem; font-weight:700; font-family:'JetBrains Mono',monospace;
+        }
+        .vc-badge-pc { background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); }
+        .vc-badge-mobile { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+
+        /* DETAIL PANELS */
+        .detail-panel { display:none; animation:fadeUp 0.5s ease; }
+        .detail-panel.active { display:block; }
+
+        .panel-header {
+            text-align:center; padding:4rem 5% 2rem;
+            max-width:1200px; margin:0 auto;
+        }
+        .back-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:10px 20px; border-radius:12px;
+            border:1px solid var(--gold-border);
+            background:rgba(245,200,66,0.05);
+            color:var(--gold); font-size:0.85rem; font-weight:600;
+            cursor:none; transition:all 0.3s; margin-bottom:2rem;
+        }
+        .back-btn:hover { background:rgba(245,200,66,0.12); }
+
+        .panel-title { font-size:clamp(1.8rem,4vw,3rem); font-weight:800; margin-bottom:0.75rem; }
+        .panel-subtitle { color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:0 auto 2.5rem; }
+
+        /* SCREENSHOTS GALLERY */
+        .screenshots-section { padding:0 5% 4rem; max-width:1200px; margin:0 auto; }
+        .gallery-label {
+            display:flex; align-items:center; gap:10px;
+            font-family:'JetBrains Mono',monospace; font-size:0.75rem;
+            color:var(--gold); letter-spacing:0.15em; text-transform:uppercase;
+            margin-bottom:1.5rem;
+        }
+        .gallery-label::before { content:'//'; color:var(--purple); }
+
+        /* PC Gallery Scroll */
+        .pc-gallery {
+            display:grid; grid-template-columns:1fr; gap:1.2rem;
+            max-height:620px; overflow-y:auto;
+            border-radius:20px;
+            border:1px solid var(--gold-border);
+            background:var(--bg3);
+            padding:1rem;
+            scroll-snap-type:y mandatory;
+        }
+        .pc-gallery::-webkit-scrollbar { width:6px; }
+        .pc-gallery::-webkit-scrollbar-thumb { background:var(--gold); border-radius:10px; }
+        .pc-gallery img {
+            width:100%; border-radius:12px;
+            object-fit:cover; display:block;
+            scroll-snap-align:start;
+            transition:transform 0.3s;
+            border:1px solid var(--border);
+        }
+        .pc-gallery img:hover { transform:scale(1.01); }
+
+        /* Mobile Gallery – vertical phone mockup strip */
+        .mobile-gallery {
+            display:flex; gap:1rem; overflow-x:auto;
+            padding:1.5rem 1rem; border-radius:20px;
+            border:1px solid var(--gold-border);
+            background:var(--bg3);
+            scroll-snap-type:x mandatory;
+        }
+        .mobile-gallery::-webkit-scrollbar { height:6px; }
+        .mobile-gallery::-webkit-scrollbar-thumb { background:var(--gold); border-radius:10px; }
+        .mobile-frame {
+            flex-shrink:0; width:200px;
+            scroll-snap-align:start;
+            position:relative;
+        }
+        .mobile-frame img {
+            width:100%; border-radius:24px;
+            border:2px solid var(--gold-border);
+            object-fit:cover; display:block;
+            transition:all 0.3s; box-shadow:0 8px 30px rgba(0,0,0,0.4);
+        }
+        .mobile-frame img:hover { transform:scale(1.04); border-color:var(--gold); box-shadow:0 12px 40px rgba(245,200,66,0.3); }
+
+        /* DOWNLOAD SECTION – PC */
+        .download-section {
+            padding:2rem 5% 4rem; max-width:700px; margin:0 auto; text-align:center;
+        }
+        .download-title { font-size:1.4rem; font-weight:800; margin-bottom:0.5rem; }
+        .download-subtitle { color:var(--muted); font-size:0.9rem; margin-bottom:2rem; line-height:1.6; }
+        .btn-download-pc {
+            display:inline-flex; align-items:center; gap:12px;
+            padding:16px 40px; border-radius:14px;
+            background:linear-gradient(135deg, var(--gold), var(--gold2));
+            color:#000; font-weight:800; font-size:1rem;
+            border:none; cursor:none; transition:all 0.3s;
+            box-shadow:0 0 40px rgba(245,200,66,0.4);
+            text-decoration:none;
+        }
+        .btn-download-pc:hover { box-shadow:0 0 70px rgba(245,200,66,0.7); transform:translateY(-4px) scale(1.02); }
+        .btn-download-pc i { font-size:1.2rem; }
+        .coming-soon-note {
+            margin-top:1.2rem; font-size:0.8rem; color:var(--muted);
+            font-family:'JetBrains Mono',monospace;
+        }
+        .coming-soon-note span { color:var(--gold); }
+
+        /* DOWNLOAD SECTION – Mobile */
+        .mobile-download-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin-top:0.5rem; }
+        .btn-apk {
+            display:inline-flex; align-items:center; gap:10px;
+            padding:15px 32px; border-radius:14px;
+            background:linear-gradient(135deg, var(--gold), var(--gold2));
+            color:#000; font-weight:800; font-size:0.95rem;
+            border:none; cursor:none; transition:all 0.3s;
+            box-shadow:0 0 30px rgba(245,200,66,0.35);
+            text-decoration:none;
+        }
+        .btn-apk:hover { box-shadow:0 0 60px rgba(245,200,66,0.6); transform:translateY(-4px); }
+        .btn-playstore {
+            display:inline-flex; align-items:center; gap:10px;
+            padding:15px 32px; border-radius:14px;
+            background:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.1));
+            border:1px solid rgba(16,185,129,0.35);
+            color:#10b981; font-weight:800; font-size:0.95rem;
+            cursor:none; transition:all 0.3s;
+            text-decoration:none;
+        }
+        .btn-playstore:hover { background:linear-gradient(135deg, #10b981, #059669); color:#000; transform:translateY(-4px); box-shadow:0 0 50px rgba(16,185,129,0.4); }
+
+        /* PLAY STORE MODAL */
+        .modal-overlay {
+            display:none; position:fixed; inset:0; z-index:500;
+            background:rgba(3,7,18,0.85); backdrop-filter:blur(12px);
+            align-items:center; justify-content:center;
+            padding:2rem;
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-box {
+            background:var(--bg2); border:1px solid var(--gold-border);
+            border-radius:28px; padding:3rem 2.5rem; max-width:480px; width:100%;
+            text-align:center; position:relative;
+            box-shadow:0 0 100px rgba(245,200,66,0.15);
+            animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes modalIn { from{opacity:0;transform:scale(0.85) translateY(20px);} to{opacity:1;transform:scale(1) translateY(0);} }
+        .modal-close {
+            position:absolute; top:16px; right:20px;
+            background:none; border:none; color:var(--muted);
+            font-size:1.3rem; cursor:none; transition:color 0.2s;
+        }
+        .modal-close:hover { color:white; }
+        .modal-icon-wrap {
+            width:90px; height:90px; border-radius:50%;
+            background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1));
+            border:2px solid rgba(16,185,129,0.3);
+            display:flex; align-items:center; justify-content:center;
+            margin:0 auto 1.5rem; font-size:2.2rem;
+            animation: iconPop 0.5s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+        @keyframes iconPop { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+        .modal-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            padding:5px 14px; border-radius:100px;
+            background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3);
+            font-size:0.72rem; color:#10b981; font-family:'JetBrains Mono',monospace;
+            letter-spacing:0.1em; margin-bottom:1rem;
+        }
+        .modal-badge .dot { width:6px; height:6px; background:#10b981; border-radius:50%; animation:pulse 2s infinite; }
+        .modal-title { font-size:1.5rem; font-weight:800; margin-bottom:0.75rem; }
+        .modal-desc { color:var(--muted); font-size:0.9rem; line-height:1.8; margin-bottom:1.5rem; }
+        .modal-progress-wrap { background:var(--border); border-radius:100px; height:6px; margin-bottom:0.5rem; overflow:hidden; }
+        .modal-progress { height:100%; border-radius:100px; background:linear-gradient(90deg,#10b981,#34d399); width:35%; animation:progressPulse 2s ease-in-out infinite; }
+        @keyframes progressPulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+        .modal-progress-label { font-size:0.78rem; color:#10b981; font-family:'JetBrains Mono',monospace; text-align:right; margin-bottom:1.5rem; }
+        .modal-notify-btn {
+            display:inline-flex; align-items:center; gap:8px;
+            padding:12px 28px; border-radius:12px;
+            background:linear-gradient(135deg,#10b981,#059669);
+            color:white; font-weight:700; font-size:0.9rem;
+            border:none; cursor:none; transition:all 0.3s;
+        }
+        .modal-notify-btn:hover { box-shadow:0 0 30px rgba(16,185,129,0.5); transform:translateY(-2px); }
+
+        /* APP INFO SECTION */
+        .app-info-section { padding:2rem 5% 5rem; max-width:1200px; margin:0 auto; }
+        .app-info-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; margin-bottom:3rem; }
+        .info-card {
+            background:var(--card); border:1px solid var(--border); border-radius:18px;
+            padding:1.5rem; transition:all 0.3s;
+        }
+        .info-card:hover { border-color:var(--gold-border); background:rgba(245,200,66,0.03); transform:translateY(-4px); }
+        .info-card i { font-size:1.5rem; color:var(--gold); margin-bottom:0.75rem; display:block; }
+        .info-card h4 { font-size:0.95rem; font-weight:700; margin-bottom:0.4rem; color:white; }
+        .info-card p { font-size:0.82rem; color:var(--muted); line-height:1.6; }
+
+        /* STATS STRIP */
+        .stats-strip {
+            display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;
+            background:var(--bg2); border:1px solid var(--gold-border);
+            border-radius:20px; padding:2rem; margin-bottom:3rem;
+        }
+        .sstat { text-align:center; padding:0.5rem; }
+        .sstat-num {
+            font-size:2.2rem; font-weight:900;
+            background:linear-gradient(135deg,var(--gold),var(--amber));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            display:block; margin-bottom:0.25rem;
+        }
+        .sstat-label { font-size:0.78rem; color:var(--muted); }
+        .sdivider { width:1px; background:var(--gold-border); margin:auto; height:50px; }
+
+        /* TECH STACK */
+        .tech-section {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:20px; padding:2rem;
+        }
+        .tech-title { font-size:1.1rem; font-weight:700; margin-bottom:1.2rem; }
+        .tech-tags { display:flex; flex-wrap:wrap; gap:10px; }
+        .ttag {
+            padding:8px 18px; border-radius:100px;
+            font-size:0.8rem; font-weight:600;
+            font-family:'JetBrains Mono',monospace;
+        }
+        .ttag-gold { background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.3); color:var(--gold); }
+        .ttag-blue { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.25); color:#3b82f6; }
+        .ttag-green { background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10b981; }
+        .ttag-purple { background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.25); color:#a855f7; }
+
+        /* SCROLL REVEAL */
+        .reveal { opacity:0; transform:translateY(30px); transition:all 0.7s cubic-bezier(0.25,0.46,0.45,0.94); }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+
+        /* FOOTER */
+        footer { border-top:1px solid var(--gold-border); padding:1.5rem 5%; text-align:center; color:var(--muted); font-size:0.82rem; position:relative; z-index:2; }
+        footer span { color:var(--gold); }
+
+        /* RESPONSIVE */
+        @media (max-width:768px) {
+            .version-chooser { grid-template-columns:1fr; }
+            .stats-strip { grid-template-columns:repeat(2,1fr); }
+            .sdivider { display:none; }
+            .mobile-gallery .mobile-frame { width:160px; }
+        }
+        @media (max-width:500px) {
+            .hero-title { font-size:2rem; }
+            .mobile-download-btns { flex-direction:column; align-items:center; }
+            .app-info-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="nav-back">
+                <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+            </a>
+            <div class="nav-logo">
+                <img src="Images/Fine ERP Logo.png" alt="Fine ERP Logo" onerror="this.style.display='none'">
+                <div class="nav-logo-text">Fine ERP <span>Jewellers</span></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+        <!-- HERO -->
+        <section class="hero-section" id="home-view">
+            <div class="hero-bg-glow"></div>
+            <div class="hero-content">
+                <div class="hero-badge"><span class="dot"></span>Featured Product – Small Brain Studio</div>
+                <div class="hero-logo-wrap">
+                    <img src="Images/Fine ERP Logo.png" alt="Fine ERP Jewellers Logo" onerror="this.style.display='none'">
+                </div>
+                <h1 class="hero-title">
+                    <span class="gold-text">Fine ERP Jewellers</span><br>
+                    <span style="font-size:60%;font-weight:600;color:var(--muted);">The Complete Jewellery Business ERP</span>
+                </h1>
+                <p class="hero-subtitle">
+                    A powerful, all-in-one ERP solution crafted exclusively for jewellery businesses. From inventory and billing to barter, pawn, and customer management — built with precision for the modern jeweller.
+                </p>
+                <div class="feature-pills">
+                    <div class="fpill"><i class="fa-solid fa-gem"></i> Jewellery Inventory</div>
+                    <div class="fpill"><i class="fa-solid fa-receipt"></i> GST Billing</div>
+                    <div class="fpill"><i class="fa-solid fa-rotate"></i> Barter & Pawn</div>
+                    <div class="fpill"><i class="fa-solid fa-cloud"></i> Cloud Sync</div>
+                    <div class="fpill"><i class="fa-solid fa-chart-line"></i> Sales Analytics</div>
+                    <div class="fpill"><i class="fa-solid fa-shield-halved"></i> Secure Data</div>
+                </div>
+                <div class="version-chooser">
+                    <div class="version-card" id="pc-version-btn" onclick="showPanel('pc')">
+                        <div class="vc-badge vc-badge-pc">WINDOWS</div>
+                        <div class="vc-icon"><i class="fa-solid fa-desktop"></i></div>
+                        <div class="vc-title">PC Version</div>
+                        <div class="vc-desc">Full-featured desktop application for Windows. Powerful dashboard, detailed reports & smooth workflow for shop counters.</div>
+                        <div class="vc-btn"><i class="fa-solid fa-display"></i> Explore PC App</div>
+                    </div>
+                    <div class="version-card" id="mobile-version-btn" onclick="showPanel('mobile')">
+                        <div class="vc-badge vc-badge-mobile">ANDROID</div>
+                        <div class="vc-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div class="vc-title">Mobile Version</div>
+                        <div class="vc-desc">Manage your jewellery business on-the-go with our Android app. Fast, intuitive & built for the field.</div>
+                        <div class="vc-btn"><i class="fa-brands fa-android"></i> Explore Mobile App</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PC PANEL -->
+        <div class="detail-panel" id="pc-panel">
+            <div class="panel-header">
+                <button class="back-btn" onclick="showHome()"><i class="fa-solid fa-arrow-left"></i> Choose Version</button>
+                <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.75rem;">// PC Version</p>
+                <h2 class="panel-title"><span class="gold-text">Desktop Application</span></h2>
+                <p class="panel-subtitle">Experience the full-power of Fine ERP Jewellers on your Windows PC. Comprehensive management at your fingertips.</p>
+            </div>
+
+            <!-- STATS -->
+            <div style="padding:0 5%;max-width:1200px;margin:0 auto;">
+                <div class="stats-strip reveal">
+                    <div class="sstat"><span class="sstat-num">20+</span><div class="sstat-label">Modules</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num">100%</span><div class="sstat-label">Offline Capable</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num">GST</span><div class="sstat-label">Ready Billing</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num">∞</span><div class="sstat-label">Records Storage</div></div>
+                </div>
+            </div>
+
+            <!-- SCREENSHOTS -->
+            <div class="screenshots-section reveal">
+                <div class="gallery-label">Screenshots – PC Dashboard</div>
+                <div class="pc-gallery" id="pc-gallery">
+                    <img src="Images/FIne Erp Jewellers/PC version/1.png" alt="PC Screenshot 1" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/2.png" alt="PC Screenshot 2" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/3.png" alt="PC Screenshot 3" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/4.png" alt="PC Screenshot 4" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/5.png" alt="PC Screenshot 5" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/6.png" alt="PC Screenshot 6" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/7.png" alt="PC Screenshot 7" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/8.png" alt="PC Screenshot 8" onerror="this.style.display='none'">
+                    <img src="Images/FIne Erp Jewellers/PC version/9.png" alt="PC Screenshot 9" onerror="this.style.display='none'">
+                </div>
+                <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-top:0.75rem;font-family:'JetBrains Mono',monospace;">↑ Scroll inside the gallery to see all screens</p>
+            </div>
+
+            <!-- DOWNLOAD PC -->
+            <div class="download-section reveal">
+                <h3 class="download-title">Ready to Power Your Business?</h3>
+                <p class="download-subtitle">Download Fine ERP Jewellers for Windows and transform how you manage your jewellery shop. Full version available soon.</p>
+                <a href="https://drive.google.com/uc?export=download&id=1jQodFbuyrXZWPyLuPgIcaT1bsdG5D08F" class="btn-download-pc" id="pc-download-btn" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-solid fa-download"></i> Download for Windows
+                </a>
+                <div class="coming-soon-note">Windows Installer (.exe) | <span>v1.0 Beta</span> | Windows 10/11 Required</div>
+            </div>
+
+            <!-- APP INFO -->
+            <div class="app-info-section">
+                <div class="gallery-label" style="margin-bottom:1.5rem;">What's Inside</div>
+                <div class="app-info-grid reveal">
+                    <div class="info-card">
+                        <i class="fa-solid fa-gem"></i>
+                        <h4>Jewellery Inventory</h4>
+                        <p>Track gold, silver, diamond, and other jewellery with weight, purity, making charges, and real-time stock levels.</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-receipt"></i>
+                        <h4>GST-Ready Billing</h4>
+                        <p>Generate professional invoices with automatic GST calculation, HSMC codes, and print-ready PDF output.</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-rotate"></i>
+                        <h4>Barter & Pawn</h4>
+                        <p>Manage gold barter and pawn transactions with full ledger tracking, interest calculations and due alerts.</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-users"></i>
+                        <h4>Customer Management</h4>
+                        <p>Complete customer profiles with purchase history, outstanding balances, and personalized communication.</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-chart-bar"></i>
+                        <h4>Sales Analytics</h4>
+                        <p>Powerful dashboards with daily, weekly, monthly sales reports and profit analysis at a glance.</p>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <h4>Cloud Backup</h4>
+                        <p>Automatic cloud sync keeps your data safe and accessible across multiple devices and locations.</p>
+                    </div>
+                </div>
+                <div class="tech-section reveal">
+                    <div class="tech-title">Built With</div>
+                    <div class="tech-tags">
+                        <span class="ttag ttag-blue">Flutter</span>
+                        <span class="ttag ttag-blue">Dart</span>
+                        <span class="ttag ttag-green">Supabase</span>
+                        <span class="ttag ttag-gold">PDF Generator</span>
+                        <span class="ttag ttag-blue">Windows Desktop</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE PANEL -->
+        <div class="detail-panel" id="mobile-panel">
+            <div class="panel-header">
+                <button class="back-btn" onclick="showHome()"><i class="fa-solid fa-arrow-left"></i> Choose Version</button>
+                <p style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:#10b981;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.75rem;">// Mobile Version</p>
+                <h2 class="panel-title"><span style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Android Application</span></h2>
+                <p class="panel-subtitle">Carry your entire jewellery business in your pocket. Full ERP power, stunning mobile UI, offline-first design.</p>
+            </div>
+
+            <!-- STATS -->
+            <div style="padding:0 5%;max-width:1200px;margin:0 auto;">
+                <div class="stats-strip reveal" style="border-color:rgba(16,185,129,0.2);">
+                    <div class="sstat"><span class="sstat-num" style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Android</span><div class="sstat-label">Platform</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num" style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Hindi</span><div class="sstat-label">UI Support</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num" style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Live</span><div class="sstat-label">Cloud Sync</div></div>
+                    <div class="sdivider"></div>
+                    <div class="sstat"><span class="sstat-num" style="background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Beta</span><div class="sstat-label">Testing Phase</div></div>
+                </div>
+            </div>
+
+            <!-- MOBILE SCREENSHOTS -->
+            <div class="screenshots-section reveal">
+                <div class="gallery-label" style="color:#10b981;">Screenshots – Mobile App</div>
+                <div class="mobile-gallery">
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/1.png" alt="Mobile Screen 1" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/2.png" alt="Mobile Screen 2" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/3.png" alt="Mobile Screen 3" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/4.png" alt="Mobile Screen 4" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/5.png" alt="Mobile Screen 5" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/6.png" alt="Mobile Screen 6" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/7.png" alt="Mobile Screen 7" onerror="this.style.display='none'"></div>
+                    <div class="mobile-frame"><img src="Images/FIne Erp Jewellers/mobile version/8.png" alt="Mobile Screen 8" onerror="this.style.display='none'"></div>
+                </div>
+                <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-top:0.75rem;font-family:'JetBrains Mono',monospace;">← Swipe / scroll horizontally to see all screens →</p>
+            </div>
+
+            <!-- DOWNLOAD MOBILE -->
+            <div class="download-section reveal">
+                <h3 class="download-title">Get Fine ERP on Your Phone</h3>
+                <p class="download-subtitle">Download directly via APK or get it from the Play Store once it goes live. Fast. Secure. Powerful.</p>
+                <div class="mobile-download-btns">
+                    <a href="https://drive.google.com/uc?export=download&id=1aJFXrIuUlQi0FIVvccz1KP1dC9cM0iRn" class="btn-apk" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-download"></i> Download APK
+                    </a>
+                    <a href="#" class="btn-playstore" onclick="openPlayStoreModal(); return false;">
+                        <i class="fa-brands fa-google-play"></i> Download from Play Store
+                    </a>
+                </div>
+                <div class="coming-soon-note" style="margin-top:1rem;">APK Size ~50MB | <span>v1.0 Beta</span> | Android 8.0+ Required</div>
+            </div>
+
+            <!-- APP INFO MOBILE -->
+            <div class="app-info-section">
+                <div class="gallery-label" style="color:#10b981;margin-bottom:1.5rem;">Mobile App Features</div>
+                <div class="app-info-grid reveal">
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-gem" style="color:#10b981;"></i>
+                        <h4>On-The-Go Inventory</h4>
+                        <p>Check stock, add items, update prices — all from your phone, even without internet.</p>
+                    </div>
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-qrcode" style="color:#10b981;"></i>
+                        <h4>Quick Billing</h4>
+                        <p>Create and share invoices instantly via WhatsApp or email — right from the app.</p>
+                    </div>
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-bell" style="color:#10b981;"></i>
+                        <h4>Smart Reminders</h4>
+                        <p>Push notifications for pawn due dates, customer follow-ups, and reorder alerts.</p>
+                    </div>
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-language" style="color:#10b981;"></i>
+                        <h4>Hindi Language UI</h4>
+                        <p>Full Hindi interface support for ease of use across all your staff and shopkeepers.</p>
+                    </div>
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-fingerprint" style="color:#10b981;"></i>
+                        <h4>Biometric Login</h4>
+                        <p>Secure fingerprint authentication ensures only authorized users access business data.</p>
+                    </div>
+                    <div class="info-card" style="border-color:rgba(16,185,129,0.15);">
+                        <i class="fa-solid fa-rotate" style="color:#10b981;"></i>
+                        <h4>Real-Time Sync</h4>
+                        <p>All changes made on mobile instantly sync with the PC version and cloud backup.</p>
+                    </div>
+                </div>
+                <div class="tech-section reveal" style="border-color:rgba(16,185,129,0.2);">
+                    <div class="tech-title">Built With</div>
+                    <div class="tech-tags">
+                        <span class="ttag ttag-blue">Flutter</span>
+                        <span class="ttag ttag-blue">Dart</span>
+                        <span class="ttag ttag-green">Supabase</span>
+                        <span class="ttag ttag-green">Android SDK</span>
+                        <span class="ttag ttag-gold">PDF + Hindi Rendering</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; <span id="year"></span> <span>Sachin</span> | Small Brain Studio — Fine ERP Jewellers</p>
+        </footer>
+    </div>
+
+    <!-- PLAY STORE MODAL -->
+    <div class="modal-overlay" id="playstore-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closePlayStoreModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-icon-wrap" style="color:#10b981;">
+                <i class="fa-brands fa-google-play"></i>
+            </div>
+            <div class="modal-badge"><span class="dot"></span> CLOSED TESTING • BETA</div>
+            <h3 class="modal-title">Coming to <span style="color:#10b981;">Play Store</span> Soon!</h3>
+            <p class="modal-desc">
+                Fine ERP Jewellers is currently in the <strong style="color:white;">Closed Testing Period</strong> on the Google Play Store. Our team is working hard to ensure the best possible experience before the full public launch.
+            </p>
+            <div class="modal-progress-wrap">
+                <div class="modal-progress"></div>
+            </div>
+            <div class="modal-progress-label">Testing Progress: 35%</div>
+            <button class="modal-notify-btn" onclick="closePlayStoreModal()">
+                <i class="fa-solid fa-bell"></i> Notify Me on Launch
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // CURSOR
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0, my=0, rx=0, ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+    function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a,button,.version-card,.info-card,.modal-box').forEach(el=>{
+        el.addEventListener('mouseenter',()=>ring.classList.add('hovering'));
+        el.addEventListener('mouseleave',()=>ring.classList.remove('hovering'));
+    });
+
+    // CANVAS PARTICLES (gold colored)
+    const canvas=document.getElementById('bg-canvas'), ctx=canvas.getContext('2d');
+    let W,H,particles=[];
+    function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+    resize(); window.addEventListener('resize',resize);
+    class P {
+        constructor(){ this.reset(); }
+        reset(){ this.x=Math.random()*W; this.y=Math.random()*H; this.r=Math.random()*1.2+0.3; this.vx=(Math.random()-0.5)*0.25; this.vy=(Math.random()-0.5)*0.25; this.alpha=Math.random()*0.4+0.08; }
+        update(){ this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
+        draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(245,200,66,${this.alpha})`; ctx.fill(); }
+    }
+    for(let i=0;i<100;i++) particles.push(new P());
+    function drawP(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(drawP); }
+    drawP();
+
+    // PANELS
+    function showPanel(type){
+        document.getElementById('home-view').style.display='none';
+        document.getElementById('pc-panel').classList.remove('active');
+        document.getElementById('mobile-panel').classList.remove('active');
+        if(type==='pc') document.getElementById('pc-panel').classList.add('active');
+        else document.getElementById('mobile-panel').classList.add('active');
+        window.scrollTo({top:0,behavior:'smooth'});
+        triggerReveal();
+    }
+    function showHome(){
+        document.getElementById('home-view').style.display='flex';
+        document.getElementById('pc-panel').classList.remove('active');
+        document.getElementById('mobile-panel').classList.remove('active');
+        window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // MODAL
+    function openPlayStoreModal(){ document.getElementById('playstore-modal').classList.add('open'); }
+    function closePlayStoreModal(){ document.getElementById('playstore-modal').classList.remove('open'); }
+    document.getElementById('playstore-modal').addEventListener('click',function(e){ if(e.target===this) closePlayStoreModal(); });
+
+    // SCROLL REVEAL
+    function triggerReveal(){
+        setTimeout(()=>{
+            const obs=new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }); },{threshold:0.1});
+            document.querySelectorAll('.reveal').forEach(el=>{el.classList.remove('visible');obs.observe(el);});
+        },100);
+    }
+    triggerReveal();
+
+    // YEAR
+    document.getElementById('year').textContent=new Date().getFullYear();
+    </script>
+</body>
+</html>

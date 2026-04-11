@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashCraft POS – Smart Point of Sale System | Small Brain Studio</title>
+    <meta name="description" content="CashCraft POS – A powerful Windows point-of-sale & inventory management system for local businesses. Download the EXE or explore the source code.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --cyan: #00f5ff;
+            --cyan2: #00c8ff;
+            --teal: #0d9488;
+            --blue: #3b82f6;
+            --purple: #a855f7;
+            --pink: #ec4899;
+            --green: #10b981;
+            --bg: #030712;
+            --bg2: #060d1a;
+            --bg3: #080e1c;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --cyan-border: rgba(0,245,255,0.2);
+            --text: #e2e8f0;
+            --muted: #64748b;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg,var(--cyan),var(--blue)); border-radius: 10px; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+            min-height: 100vh;
+        }
+
+        /* Custom Cursor */
+        #cursor-dot {
+            position: fixed; top: 0; left: 0;
+            width: 8px; height: 8px;
+            background: var(--cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s;
+        }
+        #cursor-ring {
+            position: fixed; top: 0; left: 0;
+            width: 36px; height: 36px;
+            border: 2px solid rgba(0,245,255,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: all 0.12s ease-out;
+        }
+        #cursor-ring.hovering {
+            width: 60px; height: 60px;
+            background: rgba(0,245,255,0.07);
+            border-color: var(--cyan);
+        }
+
+        /* Canvas */
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+        /* Noise */
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.4;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+            padding: 0 5%;
+            background: rgba(3,7,18,0.85);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--cyan-border);
+        }
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+        .nav-back {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: var(--muted);
+            font-size: 0.9rem; font-weight: 600; transition: all 0.3s;
+        }
+        .nav-back:hover { color: var(--cyan); }
+        .nav-logo { display: flex; align-items: center; gap: 12px; }
+        .nav-logo-icon {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(59,130,246,0.1));
+            border: 1px solid var(--cyan-border);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .nav-logo-icon img { width: 32px; height: 32px; object-fit: contain; }
+        .nav-logo-text { font-size: 1rem; font-weight: 700; color: white; }
+        .nav-logo-text span { color: var(--cyan); }
+
+        /* WRAPPER */
+        .wrapper { position: relative; z-index: 2; padding-top: 68px; }
+
+        /* Keyframes */
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.5);} }
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-24px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(32px);} to{opacity:1;transform:translateY(0);} }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+        @keyframes spin { to{transform:rotate(360deg);} }
+        @keyframes shimmer { 0%{background-position:-200% center;} 100%{background-position:200% center;} }
+        @keyframes glowPulse { 0%,100%{box-shadow:0 0 30px rgba(0,245,255,0.3);} 50%{box-shadow:0 0 70px rgba(0,245,255,0.6);} }
+        @keyframes scanline { 0%{transform:translateY(-100%);} 100%{transform:translateY(100%);} }
+
+        /* HERO */
+        .hero-section {
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 5rem 5% 4rem;
+            position: relative; overflow: hidden;
+        }
+        .hero-glow-1 {
+            position: absolute; width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(0,245,255,0.05) 0%, transparent 65%);
+            top: 50%; left: 50%; transform: translate(-50%,-50%);
+            pointer-events: none;
+        }
+        .hero-glow-2 {
+            position: absolute; width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+            bottom: 10%; right: 5%;
+            pointer-events: none;
+        }
+
+        .hero-content { text-align: center; max-width: 860px; position: relative; z-index: 2; }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 7px 22px; border-radius: 100px;
+            border: 1px solid var(--cyan-border);
+            background: rgba(0,245,255,0.06);
+            font-size: 0.78rem; color: var(--cyan); margin-bottom: 2rem;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em;
+            animation: fadeDown 0.6s ease both;
+        }
+        .hero-badge .dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+
+        /* App icon */
+        .hero-app-icon-wrap {
+            display: flex; justify-content: center; margin-bottom: 2.5rem;
+            animation: fadeUp 0.7s 0.1s ease both;
+        }
+        .hero-app-icon {
+            width: 110px; height: 110px; border-radius: 28px;
+            background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(59,130,246,0.1));
+            border: 2px solid var(--cyan-border);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 50px rgba(0,245,255,0.25);
+            animation: glowPulse 3s ease-in-out infinite;
+            position: relative; overflow: hidden;
+        }
+        .hero-app-icon img { width: 88px; height: 88px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(0,245,255,0.3)); }
+        .hero-app-icon::after {
+            content: '';
+            position: absolute; top: -100%; left: 0; right: 0; height: 50%;
+            background: linear-gradient(transparent, rgba(255,255,255,0.05), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        .hero-title {
+            font-size: clamp(2.4rem,6vw,4.8rem);
+            font-weight: 900; line-height: 1.05; margin-bottom: 1rem;
+            animation: fadeUp 0.7s 0.2s ease both;
+        }
+        .cyan-text {
+            background: linear-gradient(135deg, var(--cyan), var(--cyan2), var(--blue));
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            animation: fadeUp 0.7s 0.2s ease both, shimmer 4s linear infinite;
+        }
+        .hero-subtitle {
+            font-size: 1.05rem; color: var(--muted); line-height: 1.8;
+            margin-bottom: 2.5rem; max-width: 660px; margin-left: auto; margin-right: auto;
+            animation: fadeUp 0.7s 0.3s ease both;
+        }
+
+        /* Feature pills */
+        .feature-pills {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+            margin-bottom: 3rem;
+            animation: fadeUp 0.7s 0.4s ease both;
+        }
+        .fpill {
+            display: flex; align-items: center; gap: 7px;
+            padding: 8px 18px; border-radius: 100px;
+            border: 1px solid var(--cyan-border);
+            background: rgba(0,245,255,0.05);
+            font-size: 0.82rem; color: var(--cyan); font-weight: 600;
+            transition: all 0.3s;
+        }
+        .fpill:hover { background: rgba(0,245,255,0.12); border-color: rgba(0,245,255,0.5); transform: translateY(-2px); }
+        .fpill i { font-size: 0.78rem; }
+
+        /* Platform badge – PC only */
+        .platform-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 32px; border-radius: 16px;
+            background: linear-gradient(135deg, rgba(0,245,255,0.1), rgba(59,130,246,0.1));
+            border: 1px solid var(--cyan-border);
+            color: var(--cyan); font-size: 0.95rem; font-weight: 700;
+            animation: fadeUp 0.7s 0.5s ease both;
+            margin-bottom: 2rem;
+        }
+        .platform-badge i { font-size: 1.3rem; }
+
+        /* Download buttons */
+        .hero-download-btns {
+            display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap;
+            animation: fadeUp 0.7s 0.6s ease both;
+        }
+        .btn-dl-exe {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 16px 36px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #000; font-weight: 800; font-size: 1rem;
+            text-decoration: none; transition: all 0.35s;
+            box-shadow: 0 0 40px rgba(0,245,255,0.35);
+            border: none; cursor: none;
+        }
+        .btn-dl-exe:hover { box-shadow: 0 0 80px rgba(0,245,255,0.65); transform: translateY(-5px) scale(1.03); }
+        .btn-dl-exe i { font-size: 1.2rem; }
+
+        .btn-src {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 16px 36px; border-radius: 14px;
+            border: 1px solid var(--cyan-border);
+            background: rgba(0,245,255,0.05);
+            color: var(--cyan); font-weight: 700; font-size: 1rem;
+            text-decoration: none; transition: all 0.35s;
+            cursor: none;
+        }
+        .btn-src:hover { background: rgba(0,245,255,0.12); border-color: rgba(0,245,255,0.5); transform: translateY(-5px); box-shadow: 0 8px 40px rgba(0,245,255,0.15); }
+        .btn-src i { font-size: 1.2rem; }
+
+        /* scroll hint */
+        .scroll-hint {
+            margin-top: 3rem; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: var(--muted); font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;
+            animation: fadeIn 1s 1.2s ease both;
+        }
+        .scroll-hint .chevron { animation: float 2s ease-in-out infinite; }
+
+        /* ── STATS SECTION ── */
+        .stats-section { padding: 0 5% 5rem; max-width: 1200px; margin: 0 auto; }
+        .stats-strip {
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+            background: var(--bg2); border: 1px solid var(--cyan-border);
+            border-radius: 24px; padding: 2.5rem 2rem;
+        }
+        .sstat { text-align: center; padding: 0.5rem; }
+        .sstat-num {
+            font-size: 2.2rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            display: block; margin-bottom: 0.4rem;
+        }
+        .sstat-label { font-size: 0.8rem; color: var(--muted); }
+        .sdivider { width: 1px; background: var(--cyan-border); margin: auto; height: 50px; }
+
+        /* ── SCREENSHOTS SECTION ── */
+        .screenshots-section {
+            padding: 0 5% 5rem; max-width: 1200px; margin: 0 auto;
+        }
+        .section-label {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+            color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+        .section-label::before { content: '//'; color: var(--purple); }
+
+        /* Gallery grid – masonry-like */
+        .pc-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px,1fr));
+            gap: 16px;
+        }
+        .gallery-item {
+            position: relative; border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--bg3);
+            transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+            cursor: none;
+        }
+        .gallery-item:hover {
+            border-color: rgba(0,245,255,0.4);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(0,245,255,0.12);
+        }
+        .gallery-item img {
+            width: 100%; display: block;
+            transition: transform 0.5s;
+        }
+        .gallery-item:hover img { transform: scale(1.04); }
+        .gallery-item-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(3,7,18,0.7) 0%, transparent 50%);
+            opacity: 0; transition: opacity 0.3s;
+            display: flex; align-items: flex-end; padding: 1rem;
+        }
+        .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+        .gallery-item-num {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+            color: var(--cyan); font-weight: 600;
+            background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 100px;
+            border: 1px solid var(--cyan-border);
+        }
+
+        /* Lightbox */
+        #lightbox {
+            display: none; position: fixed; inset: 0; z-index: 1000;
+            background: rgba(3,7,18,0.96); backdrop-filter: blur(16px);
+            align-items: center; justify-content: center;
+            padding: 2rem;
+        }
+        #lightbox.open { display: flex; }
+        #lightbox img {
+            max-width: min(90vw, 1200px); max-height: 85vh;
+            border-radius: 16px; border: 1px solid var(--cyan-border);
+            box-shadow: 0 0 100px rgba(0,245,255,0.2);
+        }
+        .lb-close {
+            position: absolute; top: 1.5rem; right: 1.5rem;
+            background: none; border: none; color: white; font-size: 1.8rem;
+            cursor: none; transition: color 0.2s;
+        }
+        .lb-close:hover { color: var(--cyan); }
+        .lb-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,245,255,0.1); border: 1px solid var(--cyan-border);
+            color: var(--cyan); width: 48px; height: 48px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: none; transition: all 0.3s;
+        }
+        .lb-nav:hover { background: rgba(0,245,255,0.2); }
+        .lb-prev { left: 1.5rem; }
+        .lb-next { right: 1.5rem; }
+        .lb-counter {
+            position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+            color: var(--muted); background: rgba(0,0,0,0.6);
+            padding: 6px 16px; border-radius: 100px;
+        }
+
+        /* ── DOWNLOAD SECTION ── */
+        .download-section {
+            padding: 0 5% 5rem; max-width: 760px; margin: 0 auto; text-align: center;
+        }
+        .download-card {
+            background: var(--bg2); border: 1px solid var(--cyan-border);
+            border-radius: 28px; padding: 3.5rem 2.5rem;
+            position: relative; overflow: hidden;
+        }
+        .download-card::before {
+            content: '';
+            position: absolute; inset: 0; border-radius: 28px;
+            background: radial-gradient(circle at 50% 0%, rgba(0,245,255,0.07) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .download-card-icon {
+            width: 80px; height: 80px; border-radius: 22px;
+            background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(59,130,246,0.15));
+            border: 1px solid var(--cyan-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: var(--cyan);
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 30px rgba(0,245,255,0.2);
+        }
+        .download-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.75rem; }
+        .download-subtitle { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 2.5rem; }
+        .download-btns { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+        .btn-exe {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 16px 36px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #000; font-weight: 800; font-size: 1rem;
+            text-decoration: none; transition: all 0.35s;
+            box-shadow: 0 0 40px rgba(0,245,255,0.3);
+            cursor: none; border: none;
+        }
+        .btn-exe:hover { box-shadow: 0 0 80px rgba(0,245,255,0.6); transform: translateY(-4px) scale(1.02); }
+        .btn-source {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 16px 36px; border-radius: 14px;
+            background: rgba(168,85,247,0.1);
+            border: 1px solid rgba(168,85,247,0.3);
+            color: var(--purple); font-weight: 700; font-size: 1rem;
+            text-decoration: none; transition: all 0.35s;
+            cursor: none;
+        }
+        .btn-source:hover { background: linear-gradient(135deg,#a855f7,#7c3aed); color: white; border-color: transparent; transform: translateY(-4px); box-shadow: 0 0 50px rgba(168,85,247,0.4); }
+        .dl-note {
+            margin-top: 1.5rem; font-size: 0.8rem; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .dl-note i { color: var(--cyan); }
+
+        /* ── APP INFO ── */
+        .app-info-section { padding: 0 5% 5rem; max-width: 1200px; margin: 0 auto; }
+        .app-info-grid {
+            display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        .info-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 1.75rem; transition: all 0.35s;
+            position: relative; overflow: hidden;
+        }
+        .info-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .info-card:hover { border-color: var(--cyan-border); background: rgba(0,245,255,0.03); transform: translateY(-5px); box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+        .info-card:hover::before { opacity: 1; }
+        .info-card-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: rgba(0,245,255,0.1); border: 1px solid var(--cyan-border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: var(--cyan); margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        .info-card:hover .info-card-icon { background: linear-gradient(135deg,var(--cyan),var(--blue)); color: #000; }
+        .info-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: white; }
+        .info-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+        /* Tech stack */
+        .tech-section {
+            background: var(--bg2); border: 1px solid var(--cyan-border);
+            border-radius: 20px; padding: 2rem;
+            display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+        }
+        .tech-title { font-size: 0.85rem; font-weight: 700; color: var(--muted); flex-shrink: 0; font-family: 'JetBrains Mono', monospace; }
+        .tech-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+        .ttag {
+            padding: 8px 18px; border-radius: 100px;
+            font-size: 0.8rem; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s;
+        }
+        .ttag:hover { transform: translateY(-2px); }
+        .ttag-cyan { background: rgba(0,245,255,0.1); border: 1px solid rgba(0,245,255,0.25); color: var(--cyan); }
+        .ttag-blue { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); color: #3b82f6; }
+        .ttag-purple { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.25); color: #a855f7; }
+        .ttag-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #10b981; }
+        .ttag-pink { background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.25); color: #ec4899; }
+
+        /* FOOTER */
+        footer {
+            border-top: 1px solid var(--cyan-border);
+            padding: 2rem 5%; text-align: center;
+            color: var(--muted); font-size: 0.85rem;
+            position: relative; z-index: 2;
+        }
+        footer span { color: var(--cyan); }
+        .footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; max-width: 1200px; margin: 0 auto; }
+        .footer-links { display: flex; gap: 1.5rem; }
+        .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--cyan); }
+
+        /* SCROLL REVEAL */
+        .reveal { opacity: 0; transform: translateY(35px); transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-left { opacity: 0; transform: translateX(-40px); transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+        .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+        /* Gallery item stagger */
+        .gallery-item:nth-child(1) { transition-delay: 0.0s; }
+        .gallery-item:nth-child(2) { transition-delay: 0.05s; }
+        .gallery-item:nth-child(3) { transition-delay: 0.1s; }
+        .gallery-item:nth-child(4) { transition-delay: 0.15s; }
+        .gallery-item:nth-child(5) { transition-delay: 0.2s; }
+        .gallery-item:nth-child(6) { transition-delay: 0.25s; }
+        .gallery-item:nth-child(7) { transition-delay: 0.3s; }
+        .gallery-item:nth-child(8) { transition-delay: 0.35s; }
+        .gallery-item:nth-child(9) { transition-delay: 0.4s; }
+        .gallery-item:nth-child(n+10) { transition-delay: 0.45s; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .stats-strip { grid-template-columns: repeat(2,1fr); }
+            .sdivider { display: none; }
+            .pc-gallery-grid { grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); }
+            .tech-section { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        }
+        @media (max-width: 600px) {
+            .hero-section { padding-top: 6rem; }
+            .hero-title { font-size: 2.2rem; }
+            .hero-download-btns { flex-direction: column; align-items: center; }
+            .download-btns { flex-direction: column; align-items: center; }
+            .btn-dl-exe, .btn-src, .btn-exe, .btn-source { width: 100%; justify-content: center; }
+            .pc-gallery-grid { grid-template-columns: 1fr; }
+            .stats-strip { grid-template-columns: 1fr 1fr; }
+            .lb-nav { display: none; }
+            .download-card { padding: 2rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-inner">
+            <a href="index.html" class="nav-back">
+                <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+            </a>
+            <div class="nav-logo">
+                <div class="nav-logo-icon"><img src="Images/Cashcraftpos.ico" alt="CashCraft Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa-solid fa-cash-register\' style=\'color:var(--cyan);font-size:1.1rem;\'></i>';"></div>
+                <div class="nav-logo-text">CashCraft <span>POS</span></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+
+        <!-- ══ HERO ══ -->
+        <section class="hero-section">
+            <div class="hero-glow-1"></div>
+            <div class="hero-glow-2"></div>
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="dot"></span>By Small Brain Studio &nbsp;·&nbsp; PC Application
+                </div>
+
+                <div class="hero-app-icon-wrap">
+                    <div class="hero-app-icon">
+                        <img src="Images/Cashcraftpos.ico" alt="CashCraft POS Logo"
+                             onerror="this.outerHTML='<i class=\'fa-solid fa-cash-register\' style=\'font-size:3rem;color:var(--cyan);\'></i>';">
+                    </div>
+                </div>
+
+                <h1 class="hero-title">
+                    <span class="cyan-text">CashCraft POS</span><br>
+                    <span style="font-size:55%;font-weight:600;color:var(--muted);">Smart Point of Sale for Local Businesses</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    A professional Windows point-of-sale and inventory management system built for local businesses. 
+                    Manage sales, track stock in real-time, generate smart bills, and gain powerful analytics — 
+                    all in one sleek desktop application.
+                </p>
+
+                <div class="feature-pills">
+                    <div class="fpill"><i class="fa-solid fa-cash-register"></i> POS Billing</div>
+                    <div class="fpill"><i class="fa-solid fa-boxes-stacked"></i> Inventory Management</div>
+                    <div class="fpill"><i class="fa-solid fa-chart-line"></i> Sales Analytics</div>
+                    <div class="fpill"><i class="fa-solid fa-receipt"></i> Invoice Generation</div>
+                    <div class="fpill"><i class="fa-solid fa-users"></i> Customer Tracking</div>
+                    <div class="fpill"><i class="fa-solid fa-desktop"></i> Windows App</div>
+                </div>
+
+                <div class="platform-badge">
+                    <i class="fa-brands fa-windows"></i>
+                    Available for Windows PC &nbsp;|&nbsp; Currently PC Version Only
+                </div>
+
+                <div class="hero-download-btns">
+                    <a href="https://drive.google.com/uc?export=download&id=1-2LOHYh4bwwg52KxamI7TbPeQVNlxKRx" class="btn-dl-exe" id="hero-exe-btn" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-download"></i> Download .EXE
+                    </a>
+                    <a href="https://drive.google.com/uc?export=download&id=1y1_krOBb5J5625Wzn3TxSiUde3aEyPee" class="btn-src" id="hero-src-btn" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-brands fa-google-drive"></i> Source Code
+                    </a>
+                </div>
+
+                <div class="scroll-hint">
+                    <span>Scroll to explore</span>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══ STATS ══ -->
+        <div class="stats-section">
+            <div class="stats-strip reveal">
+                <div class="sstat">
+                    <span class="sstat-num">19+</span>
+                    <div class="sstat-label">App Screens</div>
+                </div>
+                <div class="sdivider"></div>
+                <div class="sstat">
+                    <span class="sstat-num">100%</span>
+                    <div class="sstat-label">Offline Support</div>
+                </div>
+                <div class="sdivider"></div>
+                <div class="sstat">
+                    <span class="sstat-num">PC</span>
+                    <div class="sstat-label">Windows Desktop</div>
+                </div>
+                <div class="sdivider"></div>
+                <div class="sstat">
+                    <span class="sstat-num">Fast</span>
+                    <div class="sstat-label">Real-Time Billing</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ SCREENSHOTS ══ -->
+        <div class="screenshots-section">
+            <div class="section-label reveal">Screenshots – CashCraft POS Dashboard</div>
+            <div class="pc-gallery-grid" id="gallery-grid">
+                <!-- Images 1-19 -->
+                <div class="gallery-item reveal" onclick="openLightbox(0)">
+                    <img src="Images/Cashcraft/1.png" alt="CashCraft POS Screen 1" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">01 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(1)">
+                    <img src="Images/Cashcraft/2.png" alt="CashCraft POS Screen 2" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">02 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(2)">
+                    <img src="Images/Cashcraft/3.png" alt="CashCraft POS Screen 3" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">03 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(3)">
+                    <img src="Images/Cashcraft/4.png" alt="CashCraft POS Screen 4" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">04 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(4)">
+                    <img src="Images/Cashcraft/5.png" alt="CashCraft POS Screen 5" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">05 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(5)">
+                    <img src="Images/Cashcraft/6.png" alt="CashCraft POS Screen 6" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">06 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(6)">
+                    <img src="Images/Cashcraft/7.png" alt="CashCraft POS Screen 7" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">07 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(7)">
+                    <img src="Images/Cashcraft/8.png" alt="CashCraft POS Screen 8" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">08 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(8)">
+                    <img src="Images/Cashcraft/9.png" alt="CashCraft POS Screen 9" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">09 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(9)">
+                    <img src="Images/Cashcraft/10.png" alt="CashCraft POS Screen 10" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">10 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(10)">
+                    <img src="Images/Cashcraft/11.png" alt="CashCraft POS Screen 11" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">11 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(11)">
+                    <img src="Images/Cashcraft/12.png" alt="CashCraft POS Screen 12" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">12 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(12)">
+                    <img src="Images/Cashcraft/13.png" alt="CashCraft POS Screen 13" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">13 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(13)">
+                    <img src="Images/Cashcraft/14.png" alt="CashCraft POS Screen 14" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">14 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(14)">
+                    <img src="Images/Cashcraft/15.png" alt="CashCraft POS Screen 15" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">15 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(15)">
+                    <img src="Images/Cashcraft/16.png" alt="CashCraft POS Screen 16" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">16 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(16)">
+                    <img src="Images/Cashcraft/17.png" alt="CashCraft POS Screen 17" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">17 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(17)">
+                    <img src="Images/Cashcraft/18.png" alt="CashCraft POS Screen 18" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">18 / 19</span></div>
+                </div>
+                <div class="gallery-item reveal" onclick="openLightbox(18)">
+                    <img src="Images/Cashcraft/19.png" alt="CashCraft POS Screen 19" loading="lazy" onerror="this.parentElement.style.display='none'">
+                    <div class="gallery-item-overlay"><span class="gallery-item-num">19 / 19</span></div>
+                </div>
+            </div>
+            <p style="text-align:center;color:var(--muted);font-size:0.8rem;margin-top:1rem;font-family:'JetBrains Mono',monospace;">
+                Click any screenshot to view full size
+            </p>
+        </div>
+
+        <!-- ══ DOWNLOAD SECTION ══ -->
+        <div class="download-section">
+            <div class="download-card reveal">
+                <div class="download-card-icon">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                <h3 class="download-title">Get CashCraft POS</h3>
+                <p class="download-subtitle">
+                    Download the installer for Windows and start powering your local business today. 
+                    Full offline support, no internet required to use the core features.
+                    Or dive into the source code to see how it was built!
+                </p>
+                <div class="download-btns">
+                    <a href="https://drive.google.com/uc?export=download&id=1-2LOHYh4bwwg52KxamI7TbPeQVNlxKRx" class="btn-exe" id="dl-exe-btn" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-download"></i> Download .EXE Installer
+                    </a>
+                    <a href="https://drive.google.com/uc?export=download&id=1y1_krOBb5J5625Wzn3TxSiUde3aEyPee" class="btn-source" id="dl-src-btn" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-brands fa-google-drive"></i> View Source Code
+                    </a>
+                </div>
+                <div class="dl-note">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Windows installer (.exe) &nbsp;·&nbsp; Flutter Desktop build
+                    &nbsp;·&nbsp; <span style="color:var(--cyan);">Virus-free & Safe</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ APP INFO ══ -->
+        <div class="app-info-section">
+            <div class="section-label reveal">What's Inside CashCraft</div>
+            <div class="app-info-grid">
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-cash-register"></i></div>
+                    <h4>Smart POS Billing</h4>
+                    <p>Lightning-fast billing at the counter. Add items, apply discounts, accept multiple payment modes, and print receipts instantly.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <h4>Inventory Management</h4>
+                    <p>Track every product in your store — stock levels, purchase prices, selling prices, low stock alerts, and category management.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                    <h4>Sales Analytics</h4>
+                    <p>Detailed dashboards showing daily, weekly and monthly sales, top-selling products, profit margins, and business trends.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-users"></i></div>
+                    <h4>Customer Management</h4>
+                    <p>Maintain customer profiles, track purchase history, manage loyalty points, and record outstanding dues with ease.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <h4>Invoice & Receipts</h4>
+                    <p>Generate professional, print-ready invoices and thermal receipts with your business branding and all transaction details.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-wifi-slash"></i></div>
+                    <h4>100% Offline First</h4>
+                    <p>Works completely without internet. All your data stays local and secure on your Windows machine — no subscription needed.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-tags"></i></div>
+                    <h4>Product Categories</h4>
+                    <p>Organize products into custom categories and subcategories for fast search and a clean, structured inventory workflow.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-lock"></i></div>
+                    <h4>Secure Access Control</h4>
+                    <p>Role-based login ensures only authorized staff can access sensitive reports, refund features, and admin settings.</p>
+                </div>
+                <div class="info-card reveal">
+                    <div class="info-card-icon"><i class="fa-solid fa-gear"></i></div>
+                    <h4>Easy Setup</h4>
+                    <p>Simple installer, zero configuration complexity. Get up and running in minutes — even for non-technical shop owners.</p>
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="tech-section reveal">
+                <div class="tech-title">BUILT WITH</div>
+                <div class="tech-tags">
+                    <span class="ttag ttag-cyan">Flutter</span>
+                    <span class="ttag ttag-blue">Dart</span>
+                    <span class="ttag ttag-blue">Windows Desktop</span>
+                    <span class="ttag ttag-green">SQLite</span>
+                    <span class="ttag ttag-purple">PDF Generator</span>
+                    <span class="ttag ttag-pink">Thermal Printing</span>
+                    <span class="ttag ttag-cyan">Provider</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-inner">
+                <p>© <span id="year"></span> <span>Sachin</span> | Small Brain Studio — CashCraft POS</p>
+                <div class="footer-links">
+                    <a href="index.html"><i class="fa-solid fa-house"></i> Portfolio</a>
+                    <a href="fine-erp-detail.html"><i class="fa-solid fa-gem"></i> Fine ERP</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox">
+        <button class="lb-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="lb-nav lb-prev" onclick="lbNav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <img id="lb-img" src="" alt="Screenshot preview">
+        <button class="lb-nav lb-next" onclick="lbNav(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="lb-counter" id="lb-counter"></div>
+    </div>
+
+    <script>
+    // ── CURSOR ──
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0, my=0, rx=0, ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+    function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); }
+    animRing();
+    document.querySelectorAll('a,button,.gallery-item,.info-card,.version-card,.fpill,.ttag').forEach(el=>{
+        el.addEventListener('mouseenter',()=>ring.classList.add('hovering'));
+        el.addEventListener('mouseleave',()=>ring.classList.remove('hovering'));
+    });
+
+    // ── PARTICLE CANVAS ──
+    const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+    let W, H, parts = [];
+    function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    class Par {
+        constructor(){ this.reset(); }
+        reset(){
+            this.x=Math.random()*W; this.y=Math.random()*H;
+            this.r=Math.random()*1.3+0.2;
+            this.vx=(Math.random()-0.5)*0.28; this.vy=(Math.random()-0.5)*0.28;
+            this.alpha=Math.random()*0.35+0.06;
+            this.isCyan = Math.random() > 0.6;
+        }
+        update(){ this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
+        draw(){
+            ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+            ctx.fillStyle = this.isCyan ? `rgba(0,245,255,${this.alpha})` : `rgba(59,130,246,${this.alpha})`;
+            ctx.fill();
+        }
+    }
+    for(let i=0;i<110;i++) parts.push(new Par());
+    function drawP(){
+        ctx.clearRect(0,0,W,H);
+        parts.forEach(p=>{ p.update(); p.draw(); });
+        // Connect nearby particles
+        for(let i=0;i<parts.length;i++){
+            for(let j=i+1;j<parts.length;j++){
+                const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y;
+                const d=Math.sqrt(dx*dx+dy*dy);
+                if(d<90){ ctx.beginPath(); ctx.moveTo(parts[i].x,parts[i].y); ctx.lineTo(parts[j].x,parts[j].y); ctx.strokeStyle=`rgba(0,245,255,${0.05*(1-d/90)})`; ctx.lineWidth=0.4; ctx.stroke(); }
+            }
+        }
+        requestAnimationFrame(drawP);
+    }
+    drawP();
+
+    // ── SCROLL REVEAL ──
+    const revObs = new IntersectionObserver(entries=>{
+        entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal,.reveal-left').forEach(el=>revObs.observe(el));
+
+    // ── LIGHTBOX ──
+    const imgs = [
+        'Images/Cashcraft/1.png','Images/Cashcraft/2.png','Images/Cashcraft/3.png',
+        'Images/Cashcraft/4.png','Images/Cashcraft/5.png','Images/Cashcraft/6.png',
+        'Images/Cashcraft/7.png','Images/Cashcraft/8.png','Images/Cashcraft/9.png',
+        'Images/Cashcraft/10.png','Images/Cashcraft/11.png','Images/Cashcraft/12.png',
+        'Images/Cashcraft/13.png','Images/Cashcraft/14.png','Images/Cashcraft/15.png',
+        'Images/Cashcraft/16.png','Images/Cashcraft/17.png','Images/Cashcraft/18.png',
+        'Images/Cashcraft/19.png'
+    ];
+    let lbIndex = 0;
+    function openLightbox(i){
+        lbIndex = i;
+        document.getElementById('lb-img').src = imgs[i];
+        document.getElementById('lb-counter').textContent = (i+1) + ' / ' + imgs.length;
+        document.getElementById('lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox(){
+        document.getElementById('lightbox').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    function lbNav(dir){
+        lbIndex = (lbIndex + dir + imgs.length) % imgs.length;
+        document.getElementById('lb-img').src = imgs[lbIndex];
+        document.getElementById('lb-counter').textContent = (lbIndex+1) + ' / ' + imgs.length;
+    }
+    document.getElementById('lightbox').addEventListener('click', function(e){
+        if(e.target === this) closeLightbox();
+    });
+    document.addEventListener('keydown', e=>{
+        if(document.getElementById('lightbox').classList.contains('open')){
+            if(e.key==='ArrowRight') lbNav(1);
+            if(e.key==='ArrowLeft') lbNav(-1);
+            if(e.key==='Escape') closeLightbox();
+        }
+    });
+
+    // ── YEAR ──
+    document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
