@@ -1274,6 +1274,291 @@
             color: var(--cyan);
         }
 
+        /* ============================================================
+           NOTES SECTION START
+           Ye poora block comment karne se Notes ka option gayab ho
+           jayega aur website bilkul pehle jaisi ho jayegi.
+           ============================================================ */
+
+        /* ---- NOTES BUTTON (NAV) ---- */
+        .nav-notes-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 18px;
+            border-radius: 8px;
+            background: rgba(168, 85, 247, 0.12);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: var(--purple);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .nav-notes-btn:hover {
+            background: rgba(168, 85, 247, 0.25);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+            transform: translateY(-2px);
+            color: var(--purple);
+        }
+
+        /* ---- NOTES MODAL OVERLAY ---- */
+        .notes-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(3, 7, 18, 0.88);
+            backdrop-filter: blur(18px);
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .notes-modal-overlay.open {
+            display: flex;
+        }
+
+        /* ---- NOTES MODAL BOX ---- */
+        .notes-modal {
+            background: linear-gradient(145deg, #0a0f1e, #080c17);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 28px;
+            padding: 2.5rem;
+            max-width: 580px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 90px rgba(168, 85, 247, 0.15), 0 30px 80px rgba(0,0,0,0.5);
+            animation: modalPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .notes-modal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--purple), var(--pink), transparent);
+        }
+
+        .notes-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+        }
+
+        .notes-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notes-modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--purple);
+        }
+
+        .notes-modal-title h2 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .notes-modal-title p {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .notes-modal-close {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .notes-modal-close:hover {
+            border-color: var(--pink);
+            color: var(--pink);
+            background: rgba(236, 72, 153, 0.1);
+        }
+
+        /* ---- CLASS SELECTOR ---- */
+        .notes-class-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .notes-class-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .notes-class-label::before { content: '//'; color: var(--purple); }
+
+        .notes-class-options {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .notes-class-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 12px;
+            background: rgba(168, 85, 247, 0.08);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: var(--purple);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .notes-class-btn:hover,
+        .notes-class-btn.active {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.15));
+            border-color: var(--purple);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.25);
+        }
+
+        /* ---- CHAPTERS LIST ---- */
+        .notes-chapters {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .notes-chapters.visible {
+            display: flex;
+        }
+
+        .notes-chapter-header {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .notes-chapter-header::before { content: '//'; color: var(--cyan); }
+
+        .notes-chapter-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.1rem 1.4rem;
+            background: rgba(0, 245, 255, 0.04);
+            border: 1px solid rgba(0, 245, 255, 0.12);
+            border-radius: 14px;
+            transition: all 0.3s;
+            gap: 1rem;
+        }
+
+        .notes-chapter-card:hover {
+            border-color: rgba(0, 245, 255, 0.35);
+            background: rgba(0, 245, 255, 0.08);
+            transform: translateX(4px);
+        }
+
+        .notes-chapter-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .notes-chapter-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--cyan);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .notes-chapter-text h4 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .notes-chapter-text p {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .notes-download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(0, 245, 255, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(0, 245, 255, 0.35);
+            color: var(--cyan);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+        }
+
+        .notes-download-btn:hover {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #000;
+            box-shadow: 0 6px 20px rgba(0, 245, 255, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* ============================================================
+           NOTES SECTION END
+           ============================================================ */
+
         /* ---- SCROLL REVEAL ---- */
         .reveal {
             opacity: 0;
@@ -1455,6 +1740,9 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#work">Work</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <!-- NOTES NAV LINK START -->
+                <li><button class="nav-notes-btn" id="notesNavBtn" onclick="openNotesModal()"><i class="fa-solid fa-book-open"></i> Notes</button></li>
+                <!-- NOTES NAV LINK END -->
             </ul>
             <a href="#contact" class="nav-hire">Hire Me</a>
             <button class="hamburger" id="hamburger" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
@@ -1464,6 +1752,9 @@
             <a href="#about" class="mob-link">About</a>
             <a href="#work" class="mob-link">Work</a>
             <a href="#contact" class="mob-link">Contact &amp; Hire Me</a>
+            <!-- NOTES MOBILE LINK START -->
+            <a href="#" class="mob-link" onclick="openNotesModal(); document.getElementById('mobile-menu').classList.remove('open'); return false;"><i class="fa-solid fa-book-open" style="color:var(--purple);margin-right:6px;"></i> Notes</a>
+            <!-- NOTES MOBILE LINK END -->
         </div>
     </nav>
 
@@ -1486,6 +1777,58 @@
                 onclick="document.getElementById('success-modal').classList.remove('open')">Got it!</button>
         </div>
     </div>
+
+    <!-- ============================================================
+         NOTES SECTION START  (HTML Modal)
+         Ye poora block comment karne se Notes modal gayab ho jayega.
+         ============================================================ -->
+    <div class="notes-modal-overlay" id="notes-modal-overlay" onclick="closeNotesModal(event)">
+        <div class="notes-modal">
+            <div class="notes-modal-header">
+                <div class="notes-modal-title">
+                    <div class="notes-modal-icon"><i class="fa-solid fa-book-open"></i></div>
+                    <div>
+                        <h2>Study Notes</h2>
+                        <p>Select class to view chapters</p>
+                    </div>
+                </div>
+                <button class="notes-modal-close" onclick="closeNotesModal(null)"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Class Selector -->
+            <div class="notes-class-section">
+                <div class="notes-class-label">Select Class</div>
+                <div class="notes-class-options">
+                    <button class="notes-class-btn" id="btn-12th" onclick="selectClass('12th')">
+                        <i class="fa-solid fa-graduation-cap"></i> 12th Class
+                    </button>
+                </div>
+            </div>
+
+            <!-- 12th Class Chapters -->
+            <div class="notes-chapters" id="chapters-12th">
+                <div class="notes-chapter-header">Chapters — 12th Class</div>
+
+                <!-- Chapter 1 -->
+                <div class="notes-chapter-card">
+                    <div class="notes-chapter-info">
+                        <div class="notes-chapter-num">01</div>
+                        <div class="notes-chapter-text">
+                            <h4>Fundamentals of Computer</h4>
+                            <p>Chapter 1 &bull; 12th Class Notes</p>
+                        </div>
+                    </div>
+                    <a class="notes-download-btn" href="https://drive.google.com/uc?export=download&id=1U1i4LrMx9ZO7kJg7pwjlpnNJLWDtTFOZ" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-download"></i> Download PDF
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================
+         NOTES SECTION END  (HTML Modal)
+         ============================================================ -->
 
     <div class="wrapper">
         <!-- HERO -->
@@ -1973,6 +2316,41 @@
                 }, 4000);
             });
         }
+
+        // ============================================================
+        // NOTES SECTION START  (JavaScript)
+        // Ye poora block comment karne se Notes functionality band ho
+        // jayegi aur website bilkul pehle jaisi ho jayegi.
+        // ============================================================
+
+        function openNotesModal() {
+            const overlay = document.getElementById('notes-modal-overlay');
+            overlay.classList.add('open');
+            // Reset state
+            document.querySelectorAll('.notes-chapters').forEach(c => c.classList.remove('visible'));
+            document.querySelectorAll('.notes-class-btn').forEach(b => b.classList.remove('active'));
+        }
+
+        function closeNotesModal(event) {
+            if (event === null || event.target === document.getElementById('notes-modal-overlay')) {
+                document.getElementById('notes-modal-overlay').classList.remove('open');
+            }
+        }
+
+        function selectClass(cls) {
+            // Reset all
+            document.querySelectorAll('.notes-chapters').forEach(c => c.classList.remove('visible'));
+            document.querySelectorAll('.notes-class-btn').forEach(b => b.classList.remove('active'));
+            // Show selected
+            const chaptersEl = document.getElementById('chapters-' + cls);
+            const btnEl = document.getElementById('btn-' + cls);
+            if (chaptersEl) chaptersEl.classList.add('visible');
+            if (btnEl) btnEl.classList.add('active');
+        }
+
+        // ============================================================
+        // NOTES SECTION END  (JavaScript)
+        // ============================================================
     </script>
 </body>
 
